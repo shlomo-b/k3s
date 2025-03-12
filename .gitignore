@@ -2,4 +2,4 @@
 kubeconfig
 
 # Ignore k3s-ansible another repo
-./k3s-ansible
+k3s-ansible
