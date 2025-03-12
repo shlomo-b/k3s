@@ -75,7 +75,10 @@ You should see `id_rsa` (private key) and `id_rsa.pub` (public key)
 Create/update authorized_keys file on each target VM:
 ```bash
 cd ~/.ssh/
-# Create or update authorized_keys with the content of id_rsa.pub from Ansible server
+# Create the authorized_keys file if it doesn't exist
+touch authorized_keys
+# Add the public key from the Ansible server to the authorized_keys file
+# The content of id_rsa.pub from the Ansible server should be added here
 ```
 
 Verify connection from Ansible server to VMs without password:
@@ -92,7 +95,11 @@ git clone https://github.com/techno-tim/k3s-ansible
 
 ### 4. Configure the Deployment
 
-Copy the `roles` folder from the repository to your local folder (e.g., `my-cluster`).
+Copy the `roles` folder from the repository to your local folder (e.g., `my-cluster`):
+```bash
+mkdir my-cluster
+cp -r k3s-ansible/roles my-cluster/
+```
 
 Edit configuration files:
 
@@ -144,9 +151,9 @@ On the master node:
 kubectl get nodes
 ```
 
-To change the role of a node:
+To change the role of a node (for example, if node3 doesn't have a proper role assigned):
 ```bash
-k3s kubectl label node <node_name> node-role.kubernetes.io/worker=worker
+k3s kubectl label node node3 node-role.kubernetes.io/worker=worker
 ```
 
 For detailed node information:
