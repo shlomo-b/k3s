@@ -112,10 +112,17 @@ Edit configuration files:
 
 ### 5. Test Connectivity
 
-Test communication from Ansible server to nodes and master:
+Test communication from Ansible server to worker nodes:
 ```bash
-ansible-playbook -i /path/to/your/hosts /path/to/your/ping.yml
+ansible-playbook -i /home/username/my-cluster/hosts /home/username/my-cluster/ping.yml
 ```
+
+Verify connectivity to the master node:
+```bash
+ansible-playbook -i /home/username/my-cluster/hosts.ini /home/username/my-cluster/ping.yml
+```
+
+You should see "REACHABLE" for all nodes if connectivity is successful.
 
 ### 6. Deploy K3s
 
