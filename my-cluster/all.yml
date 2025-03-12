@@ -1,0 +1,46 @@
+---
+k3s_version: "v1.30.2+k3s2"
+ansible_user: shlomob
+systemd_dir: /etc/systemd/system
+
+# Set your timezone
+system_timezone: Asia/Jerusalem
+
+# Network settings
+flannel_iface: ens33
+
+# Cilium settings
+cilium_bgp: false
+cilium_iface: null
+
+# Kubernetes API settings
+apiserver_endpoint: "10.0.11.230"
+k3s_token: some-SUPER-DEDEUPER-secret-password
+
+# Node configuration
+k3s_node_ip: "{{ ansible_facts[flannel_iface]['ipv4']['address'] }}"
+k3s_master_taint: "{{ true if groups['node'] | default([]) | length >= 1 else false }}"
+
+# Load balancer settings
+kube_vip_lb_ip_range: null
+kube_vip_tag_version: v0.8.2
+
+# MetalLB settings
+metal_lb_speaker_tag_version: v0.14.8
+metal_lb_controller_tag_version: v0.14.8
+metal_lb_ip_range: "10.90.100.100-10.90.100.150"
+
+# Server arguments
+extra_args: >-
+  --flannel-iface={{ flannel_iface }}
+  --node-ip={{ k3s_node_ip }}
+
+extra_server_args: >-
+  {{ extra_args }}
+  {{ '--node-taint node-role.kubernetes.io/master=true:NoSchedule' if k3s_master_taint else '' }}
+  --tls-san {{ apiserver_endpoint }}
+  --disable servicelb
+  --disable traefik
+
+extra_agent_args: >-
+  {{ extra_args }}
