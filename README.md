@@ -86,14 +86,7 @@ Verify connection from Ansible server to VMs without password:
 ssh -i ~/.ssh/id_rsa username@VM_IP_ADDRESS
 ```
 
-### 3. Clone the K3s Ansible Repository
-
-On the Ansible server:
-```bash
-git clone https://github.com/techno-tim/k3s-ansible
-```
-
-### 4. Configure the Deployment
+### 3. Configure the Deployment
 
 Copy the `roles` folder from the repository to your local folder (e.g., `my-cluster`):
 ```bash
@@ -117,7 +110,7 @@ Edit configuration files:
 #### ping.yml
 - Use for testing communication between Ansible server and nodes
 
-### 5. Test Connectivity
+### 4. Test Connectivity
 
 Test communication from Ansible server to worker nodes:
 ```bash
@@ -131,7 +124,7 @@ ansible-playbook -i /home/username/my-cluster/hosts.ini /home/username/my-cluste
 
 You should see "REACHABLE" for all nodes if connectivity is successful.
 
-### 6. Deploy K3s
+### 5. Deploy K3s
 
 Run the deployment playbook:
 ```bash
@@ -144,7 +137,7 @@ If you encounter errors with apiserver, add the following to your hosts.ini:
 apiserver_endpoint=<IP_ADDRESS>
 ```
 
-### 7. Verify Deployment
+### 6. Verify Deployment
 
 On the master node:
 ```bash
