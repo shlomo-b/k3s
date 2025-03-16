@@ -87,9 +87,14 @@ ssh -i ~/.ssh/id_rsa username@VM_IP_ADDRESS
 ```
 
 ### 3. Clone the Repository
-git clone https://github.com/shlomo-b/k3s.git
 
+On the Ansible server:
+```bash
+git clone https://github.com/shlomo-b/k3s.git
 ```
+
+### 4. Configure the Deployment
+
 Edit configuration files:
 
 #### site.yml
@@ -106,7 +111,7 @@ Edit configuration files:
 #### ping.yml
 - Use for testing communication between Ansible server and nodes
 
-### 4. Test Connectivity
+### 5. Test Connectivity
 
 Test communication from Ansible server to worker nodes:
 ```bash
@@ -120,7 +125,7 @@ ansible-playbook -i /home/username/my-cluster/hosts.ini /home/username/my-cluste
 
 You should see "REACHABLE" for all nodes if connectivity is successful.
 
-### 5. Deploy K3s
+### 6. Deploy K3s
 
 Run the deployment playbook:
 ```bash
@@ -133,7 +138,7 @@ If you encounter errors with apiserver, add the following to your hosts.ini:
 apiserver_endpoint=<IP_ADDRESS>
 ```
 
-### 6. Verify Deployment
+### 7. Verify Deployment
 
 On the master node:
 ```bash
