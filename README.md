@@ -86,14 +86,10 @@ Verify connection from Ansible server to VMs without password:
 ssh -i ~/.ssh/id_rsa username@VM_IP_ADDRESS
 ```
 
-### 3. Configure the Deployment
+### 3. Clone the Repository
+git clone https://github.com/shlomo-b/k3s.git
 
-Copy the `roles` folder from the repository to your local folder (e.g., `my-cluster`):
-```bash
-mkdir my-cluster
-cp -r k3s-ansible/roles my-cluster/
 ```
-
 Edit configuration files:
 
 #### site.yml
