@@ -25,3 +25,7 @@
 
 # # command to run playbook:
 # # ansible-playbook -i /home/shlomob/my-cluster/hosts.ini /home/shlomob/my-cluster/ping.yml
+
+
+# command to run playbook to deploy k3s:
+# ansible-playbook site.yml -i hosts.ini -vvv
