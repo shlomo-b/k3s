@@ -40,12 +40,12 @@
     - role: k3s_agent
       become: true
 
-- name: Configure k3s cluster
-  hosts: master
-  environment: "{{ proxy_env | default({}) }}"
-  roles:
-    - role: k3s_server_post
-      become: true
+# - name: Configure k3s cluster
+#   hosts: master
+#   environment: "{{ proxy_env | default({}) }}"
+#   roles:
+#     - role: k3s_server_post
+#       become: true
 
 - name: Storing kubeconfig in the playbook directory
   hosts: master
