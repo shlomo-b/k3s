@@ -1,4 +1,4 @@
-# # ---
+# ---
 # - name: Ping Kubernetes nodes
 #   hosts: node
 #   remote_user: shlomob
@@ -9,10 +9,6 @@
 #   tasks:
 #     - name: Ping hosts
 #       ping:
-
-# command to run playbook:
-# ansible-playbook -i hosts ping.yml
-
 ---
 - name: Ping Kubernetes nodes
   hosts: master
@@ -23,9 +19,15 @@
     - name: Ping hosts
       ping:
 
-# # # command to run playbook:
-# # # ansible-playbook -i hosts.ini ping.yml
 
+# command to run playbook to ping worker nodes:
+# ansible-playbook -i hosts ping.yml
+
+# command to run playbook to ping master nodes:
+# ansible-playbook -i hosts.ini ping.yml
 
 # command to run playbook to deploy k3s:
 # ansible-playbook site.yml -i hosts.ini -vvv
+
+# command to run playbook to reset k3s:
+# ansible-playbook reset.yml -i hosts.ini -vvv
