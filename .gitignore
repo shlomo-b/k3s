@@ -6,3 +6,6 @@ k3s-ansible
 
 # Ignore k3s-IPs.md
 k3s-IPs.md
+
+# Ignore all.yaml
+all.yaml
