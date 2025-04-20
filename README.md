@@ -50,7 +50,7 @@ This repository contains instructions and configurations for deploying Kubernete
    ```bash
    sudo pip3 install netaddr
    ```
-## 8. Communications
+## 7. Communications
 
 Ensure that the necessary rules and policies for routing are properly configured when the virtual machines (VMs) are not within the same network.
 
