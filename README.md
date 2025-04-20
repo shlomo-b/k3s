@@ -107,6 +107,7 @@ Edit configuration files:
 - Define the IPs for master and worker nodes
 
 #### ping.yml
+  edit ping.yml and update the username on remote_user
 - Use for testing communication between Ansible server and nodes
 
 ### 5. Test Connectivity
