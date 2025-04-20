@@ -10,9 +10,9 @@ This repository contains instructions and configurations for deploying Kubernete
 ## Requirements
 
 ### Hardware
-- Minimum 4 VMs:
+- Minimum 3 VMs:
   - 1 Master Node
-  - 2 Worker Nodes
+  - 1 Worker Nodes
   - 1 Ansible Server (for deploying k3s)
 
 ### System Preparation
@@ -24,10 +24,7 @@ This repository contains instructions and configurations for deploying Kubernete
 2. Install Ansible on all VMs
    - Follow [official Ansible documentation](https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html)
 
-3. Install a load balancer controller (e.g., MetalLB)
-   - Note: If you encounter errors about missing ALB during Ansible installation, deploy ALB on the master node
-
-4. User Configuration:
+3. User Configuration:
    - Create the same user on all VMs
    - Add the user to sudo group and grant full permissions:
      ```bash
@@ -35,7 +32,7 @@ This repository contains instructions and configurations for deploying Kubernete
      echo "username ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/username
      ```
 
-5. Update NTP time on all VMs:
+4. Update NTP time on all VMs:
    ```bash
    sudo timedatectl set-ntp off
    sudo timedatectl set-time "YYYY-MM-DD HH:MM:SS"
@@ -44,12 +41,12 @@ This repository contains instructions and configurations for deploying Kubernete
    sudo timedatectl set-ntp on
    ```
 
-6. Set hostname for all VMs
+5. Set hostname for all VMs
    ```bash
    sudo hostnamectl set-hostname <hostname>
    ```
 
-7. Install required library on Ansible server:
+6. Install required library on Ansible server:
    ```bash
    sudo pip3 install netaddr
    ```
@@ -106,10 +103,6 @@ Edit configuration files:
 - Set `apiserver_endpoint` (VIP) when using multiple master nodes
 - Set K3s version (e.g., v1.30)
 
-#### all.yml
-- Configure load balancer IP pool address for MetalLB
-- Set Ansible user
-
 #### hosts.ini
 - Define the IPs for master and worker nodes
 
@@ -120,12 +113,12 @@ Edit configuration files:
 
 Test communication from Ansible server to worker nodes:
 ```bash
-ansible-playbook -i /home/username/my-cluster/hosts /home/username/my-cluster/ping.yml
+ansible-playbook -i hosts ping.yml
 ```
 
 Verify connectivity to the master node:
 ```bash
-ansible-playbook -i /home/username/my-cluster/hosts.ini /home/username/my-cluster/ping.yml
+ansible-playbook -i hosts.ini ping.yml
 ```
 
 You should see "REACHABLE" for all nodes if connectivity is successful.
@@ -160,11 +153,11 @@ For detailed node information:
 kubectl get nodes -o wide
 ```
 
-### Troubleshooting
+### 8. Remove K3s
 
-If MetalLB is not installed during deployment, manually install it on the master node:
+Run the reset playbook:
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.7/config/manifests/metallb-native.yaml
+ansible-playbook reset.yml -i hosts.ini -vvv
 ```
 
 ## Notes
