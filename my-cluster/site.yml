@@ -30,6 +30,17 @@
     - role: k3s_server
       become: true
 
+# - name: Setup k3s servers
+#   hosts: master
+#   environment: "{{ proxy_env | default({}) }}"
+#   vars:
+#     apiserver_endpoint: "10.0.11.230"
+#     k3s_token: "some-SUPER-DEDEUPER-secret-password"
+#     server_init_args: "--cluster-init --tls-san 10.0.11.230 --disable traefik"
+#   roles:
+#     - role: k3s_server
+#       become: true
+
 - name: Setup k3s agents
   hosts: node
   environment: "{{ proxy_env | default({}) }}"
