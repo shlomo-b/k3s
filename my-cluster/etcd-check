@@ -1,0 +1,27 @@
+# show us the table of etcd
+ETCDCTL_API=3 etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/var/lib/rancher/k3s/server/tls/etcd/server-ca.crt \
+  --cert=/var/lib/rancher/k3s/server/tls/etcd/server-client.crt \
+  --key=/var/lib/rancher/k3s/server/tls/etcd/server-client.key \
+  endpoint status --write-out=table
+
+
+# show us the data of etcd
+  sudo ETCDCTL_API=3 etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/var/lib/rancher/k3s/server/tls/etcd/server-ca.crt \
+  --cert=/var/lib/rancher/k3s/server/tls/etcd/server-client.crt \
+  --key=/var/lib/rancher/k3s/server/tls/etcd/server-client.key \
+  get / --prefix --keys-only
+
+# show us the service etcd
+  ps aux | grep k3s
+
+# show us the etcd members
+  ETCDCTL_API=3 etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/var/lib/rancher/k3s/server/tls/etcd/server-ca.crt \
+  --cert=/var/lib/rancher/k3s/server/tls/etcd/server-client.crt \
+  --key=/var/lib/rancher/k3s/server/tls/etcd/server-client.key \
+  member list

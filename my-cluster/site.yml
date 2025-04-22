@@ -34,9 +34,9 @@
 #   hosts: master
 #   environment: "{{ proxy_env | default({}) }}"
 #   vars:
-#     apiserver_endpoint: "10.0.11.230"
+#     apiserver_endpoint: "172.16.32.166"
 #     k3s_token: "some-SUPER-DEDEUPER-secret-password"
-#     server_init_args: "--cluster-init --tls-san 10.0.11.230 --disable traefik"
+#     server_init_args: "--cluster-init --tls-san 172.16.32.166 --disable traefik --disable metrics-server"
 #   roles:
 #     - role: k3s_server
 #       become: true
