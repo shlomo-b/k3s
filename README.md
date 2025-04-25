@@ -104,6 +104,9 @@ Edit configuration files:
 - Set K3s version (e.g., v1.30)
 
 #### hosts.ini
+- Define the IPs for master and worker nodes, on the section master and the section worker nodes
+
+#### hosts
 - Define the IPs for master and worker nodes
 
 #### ping.yml
