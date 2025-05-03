@@ -19,33 +19,33 @@
     - role: download
       become: true
 
-- name: Setup k3s servers
-  hosts: master
-  environment: "{{ proxy_env | default({}) }}"
-  vars:
-    apiserver_endpoint: "10.0.11.230"
-    k3s_token: "some-SUPER-DEDEUPER-secret-password"
-    server_init_args: "--tls-san 10.0.11.230 --disable traefik"
-  roles:
-    - role: k3s_server
-      become: true
-
 # - name: Setup k3s servers
 #   hosts: master
 #   environment: "{{ proxy_env | default({}) }}"
 #   vars:
-#     apiserver_endpoint: "172.16.32.166"
+#     apiserver_endpoint: "10.0.11.230"
 #     k3s_token: "some-SUPER-DEDEUPER-secret-password"
-#     server_init_args: "--cluster-init --tls-san 172.16.32.166 --disable traefik --disable metrics-server"
+#     server_init_args: "--tls-san 10.0.11.230 --disable traefik"
 #   roles:
 #     - role: k3s_server
 #       become: true
+
+- name: Setup k3s servers
+  hosts: master
+  environment: "{{ proxy_env | default({}) }}"
+  vars:
+    apiserver_endpoint: "10.90.100.230"
+    k3s_token: "some-SUPER-DEDEUPER-secret-password"
+    server_init_args: "--cluster-init --tls-san 10.90.100.230 --disable traefik --disable metrics-server"
+  roles:
+    - role: k3s_server
+      become: true
 
 - name: Setup k3s agents
   hosts: node
   environment: "{{ proxy_env | default({}) }}"
   vars:
-    apiserver_endpoint: "10.0.11.230"
+    apiserver_endpoint: "10.90.100.230"
     k3s_token: "some-SUPER-DEDEUPER-secret-password"
   roles:
     - role: k3s_agent

@@ -1,3 +1,6 @@
+sudo apt update
+sudo apt install etcd-client -y
+
 # show us the table of etcd
 ETCDCTL_API=3 etcdctl \
   --endpoints=https://127.0.0.1:2379 \
