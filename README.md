@@ -30,6 +30,15 @@ This repository contains instructions and configurations for deploying Kubernete
      ```bash
      sudo usermod -aG sudo username
      echo "username ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/username
+     In case of:
+     Permission Error: k3s.yaml access denied:
+     WARN[0000] Unable to read /etc/rancher/k3s/k3s.yaml, please start server with --write-kubeconfig-mode or --write-kubeconfig-group to modify kube config permissions 
+      error: error loading config file "/etc/rancher/k3s/k3s.yaml": open /etc/rancher/k3s/k3s.yaml: permission denied
+      options:
+      sudo k3s server --write-kubeconfig-mode=644
+      or
+      sudo chown "username" /etc/rancher/k3s/k3s.yaml
+      This will give you permission to run kubectl commands without using sudo.
      ```
 
 4. Update NTP time on all VMs:
