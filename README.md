@@ -143,12 +143,6 @@ Run the deployment playbook:
 ansible-playbook site.yml -i hosts.ini -vvv
 ```
 
-If you encounter errors with apiserver, add the following to your hosts.ini:
-```
-[all:vars]
-apiserver_endpoint=<IP_ADDRESS>
-```
-
 ### 7. Verify Deployment
 
 On the master node:
