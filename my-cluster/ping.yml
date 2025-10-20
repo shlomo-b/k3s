@@ -1,23 +1,23 @@
-# ---
-# - name: Ping Kubernetes nodes
-#   hosts: node
-#   remote_user: shlomob
-#   gather_facts: false
-#   vars:
-#     ansible_python_interpreter: /usr/bin/python3
-  
-#   tasks:
-#     - name: Ping hosts
-#       ping:
 ---
 - name: Ping Kubernetes nodes
-  hosts: master
+  hosts: node
   remote_user: shlomob
   gather_facts: false
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   
   tasks:
     - name: Ping hosts
       ping:
+# ---
+# - name: Ping Kubernetes nodes
+#   hosts: master
+#   remote_user: shlomob
+#   gather_facts: false
+  
+#   tasks:
+#     - name: Ping hosts
+#       ping:
 
 
 # command to run playbook to ping worker nodes:
