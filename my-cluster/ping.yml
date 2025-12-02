@@ -21,7 +21,7 @@
 
 
 # command to run playbook to ping worker nodes:
-# ansible-playbook -i hosts ping.yml
+# ansible-playbook -i hosts.ini ping.yml
 
 # command to run playbook to ping master nodes:
 # ansible-playbook -i hosts.ini ping.yml
