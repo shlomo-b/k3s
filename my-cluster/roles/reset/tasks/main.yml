@@ -29,6 +29,49 @@
   loop_control:
     loop_var: mounted_fs
 
+- name: Remove known CNI network interfaces (first pass)
+  ansible.builtin.command:
+    cmd: "ip link del {{ item }}"
+  loop: "{{ cni_interfaces_to_remove }}"
+  failed_when: false
+  changed_when: false
+
+- name: Remove known CNI network interfaces (second pass for peer interfaces)
+  ansible.builtin.command:
+    cmd: "ip link del {{ item }}"
+  loop: "{{ cni_interfaces_to_remove }}"
+  failed_when: false
+  changed_when: false
+
+- name: Initialize interfaces_to_remove as empty list
+  ansible.builtin.set_fact:
+    interfaces_to_remove: []
+
+- name: Find CNI interfaces by pattern
+  ansible.builtin.shell: |
+    ip link show | grep -E "{{ cni_interface_patterns | join('|') }}" | sed -E 's/^[0-9]+: ([^:@]+)(@[^:]+)?:.*/\1/' | sort -u
+  register: found_cni_interfaces
+  changed_when: false
+  failed_when: false
+  when: cni_interface_patterns is defined
+
+- name: Filter out interfaces that are already in the known list
+  ansible.builtin.set_fact:
+    interfaces_to_remove: "{{ found_cni_interfaces.stdout_lines | default([]) | difference(cni_interfaces_to_remove | default([])) }}"
+  when: 
+    - found_cni_interfaces.stdout_lines is defined
+    - found_cni_interfaces.stdout_lines | length > 0
+
+- name: Remove found CNI interfaces (excluding known ones)
+  ansible.builtin.command:
+    cmd: "ip link del {{ item }}"
+  loop: "{{ interfaces_to_remove | default([]) }}"
+  failed_when: false
+  changed_when: false
+  when: 
+    - interfaces_to_remove is defined
+    - interfaces_to_remove | length > 0
+
 - name: Remove service files, binaries and data
   ansible.builtin.file:
     name: "{{ item }}"
@@ -46,6 +89,7 @@
     - /var/lib/rancher/
     - /var/lib/cni/
     - /etc/cni/net.d
+    - /var/lib/rancher/k3s/agent/etc/cni/net.d
 
 - name: Remove K3s http_proxy files
   ansible.builtin.file:

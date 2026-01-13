@@ -117,7 +117,7 @@
 
     - name: Test for existing Cilium install
       ansible.builtin.command: |
-        {{ k3s_kubectl_binary | default('k3s kubectl') }} -n kube-system get daemonsets cilium
+        {{ k3s_kubectl_binary | default('k3s kubectl') }} -n cilium-network-policy get daemonsets cilium
       register: cilium_installed
       failed_when: false
       changed_when: false
@@ -147,76 +147,102 @@
         - name: Determine if Cilium needs update
           ansible.builtin.set_fact:
             cilium_needs_update: >-
-              {{ 'v' + installed_cilium_version != cilium_tag }}
+              {{ 'v' + installed_cilium_version != (cilium_tag | default('')) }}
 
         - name: Log result
           ansible.builtin.debug:
             msg: >
               Installed Cilium version: {{ installed_cilium_version }},
-              Target Cilium version: {{ cilium_tag }},
+              Target Cilium version: {{ cilium_tag | default('latest') }},
               Update needed: {{ cilium_needs_update }}
 
-    - name: Install Cilium
-      ansible.builtin.command: >-
-        {% if cilium_installed.rc != 0 %}
-        cilium install
-        {% else %}
-        cilium upgrade
-        {% endif %}
-        --version "{{ cilium_tag }}"
-        --helm-set operator.replicas="1"
-        {{ '--helm-set devices=' + cilium_iface if cilium_iface != 'auto' else '' }}
-        --helm-set ipam.operator.clusterPoolIPv4PodCIDRList={{ cluster_cidr }}
-        {% if cilium_mode == "native" or (cilium_bgp and cilium_exportPodCIDR != 'false') %}
-        --helm-set ipv4NativeRoutingCIDR={{ cluster_cidr }}
-        {% endif %}
-        --helm-set k8sServiceHost="127.0.0.1"
-        --helm-set k8sServicePort="6444"
-        --helm-set routingMode={{ cilium_mode }}
-        --helm-set autoDirectNodeRoutes={{ "true" if cilium_mode == "native" else "false" }}
-        --helm-set kubeProxyReplacement={{ kube_proxy_replacement }}
-        --helm-set bpf.masquerade={{ enable_bpf_masquerade }}
-        --helm-set bgpControlPlane.enabled={{ cilium_bgp | default("false") }}
-        --helm-set hubble.enabled={{ "true" if cilium_hubble else "false" }}
-        --helm-set hubble.relay.enabled={{ "true" if cilium_hubble else "false" }}
-        --helm-set hubble.ui.enabled={{ "true" if cilium_hubble else "false" }}
-        {% if kube_proxy_replacement is not false %}
-        --helm-set bpf.loadBalancer.algorithm={{ bpf_lb_algorithm }}
-        --helm-set bpf.loadBalancer.mode={{ bpf_lb_mode }}
-        {% endif %}
-      environment:
-        KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
-      register: cilium_install_result
-      changed_when: cilium_install_result.rc == 0
-      when: cilium_installed.rc != 0 or cilium_needs_update
+    - name: Copy Cilium values file to master node
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/cilium-values.yaml"
+        dest: /tmp/k3s/cilium-values.yaml
+        owner: root
+        group: root
+        mode: "0644"
+      ignore_errors: true
+      register: cilium_values_copy
+      failed_when: false
 
-    - name: Wait for Cilium resources
-      ansible.builtin.command: >-
-        {% if item.type == 'daemonset' %}
-        {{ k3s_kubectl_binary | default('k3s kubectl') }} wait pods
-        --namespace=kube-system
-        --selector='k8s-app=cilium'
-        --for=condition=Ready
-        {% else %}
-        {{ k3s_kubectl_binary | default('k3s kubectl') }} wait {{ item.type }}/{{ item.name }}
-        --namespace=kube-system
-        --for=condition=Available
-        {% endif %}
-        --timeout=30s
-      register: cr_result
-      changed_when: false
-      until: cr_result is succeeded
-      retries: 30
-      delay: 7
-      with_items:
-        - { name: cilium-operator, type: deployment }
-        - { name: cilium, type: daemonset, selector: k8s-app=cilium }
-        - { name: hubble-relay, type: deployment, check_hubble: true }
-        - { name: hubble-ui, type: deployment, check_hubble: true }
-      loop_control:
-        label: "{{ item.type }}/{{ item.name }}"
-      when: >-
-        not item.check_hubble | default(false) or (item.check_hubble | default(false) and cilium_hubble)
+    - name: Create cilium-network-policy namespace
+      ansible.builtin.command:
+        cmd: "{{ k3s_kubectl_binary | default('k3s kubectl') }} create namespace cilium-network-policy"
+      register: create_ns
+      failed_when: false
+      changed_when: create_ns.rc == 0
+
+    # Cilium installation is done manually via Helm
+    # - name: Install Cilium
+    #   ansible.builtin.command: >-
+    #     {% if cilium_installed.rc != 0 %}
+    #     cilium install
+    #     {% else %}
+    #     cilium upgrade
+    #     {% endif %}
+    #     --namespace cilium-network-policy
+    #     {% if cilium_tag is defined and cilium_tag is not none %}
+    #     --version "{{ cilium_tag }}"
+    #     {% endif %}
+    #     {% if cilium_values_copy is defined and (cilium_values_copy.failed is not defined or cilium_values_copy.failed == false) %}
+    #     --values /tmp/k3s/cilium-values.yaml
+    #     {% endif %}
+    #     --helm-set operator.replicas="1"
+    #     {{ '--helm-set devices=' + cilium_iface if cilium_iface != 'auto' else '' }}
+    #     --helm-set ipam.operator.clusterPoolIPv4PodCIDRList={{ cluster_cidr }}
+    #     {% if cilium_mode == "native" or (cilium_bgp and cilium_exportPodCIDR != 'false') %}
+    #     --helm-set ipv4NativeRoutingCIDR={{ cluster_cidr }}
+    #     {% endif %}
+    #     --helm-set k8sServiceHost="127.0.0.1"
+    #     --helm-set k8sServicePort="6444"
+    #     --helm-set routingMode={{ cilium_mode }}
+    #     --helm-set autoDirectNodeRoutes={{ "true" if cilium_mode == "native" else "false" }}
+    #     --helm-set kubeProxyReplacement={{ kube_proxy_replacement }}
+    #     --helm-set bpf.masquerade={{ enable_bpf_masquerade }}
+    #     --helm-set bgpControlPlane.enabled={{ cilium_bgp | default("false") }}
+    #     --helm-set hubble.enabled={{ "true" if cilium_hubble else "false" }}
+    #     --helm-set hubble.relay.enabled={{ "true" if cilium_hubble else "false" }}
+    #     --helm-set hubble.ui.enabled={{ "true" if cilium_hubble else "false" }}
+    #     {% if kube_proxy_replacement is not false %}
+    #     --helm-set bpf.loadBalancer.algorithm={{ bpf_lb_algorithm }}
+    #     --helm-set bpf.loadBalancer.mode={{ bpf_lb_mode }}
+    #     {% endif %}
+    #   environment:
+    #     KUBECONFIG: "{{ ansible_user_dir }}/.kube/config"
+    #   register: cilium_install_result
+    #   changed_when: cilium_install_result.rc == 0
+    #   when: cilium_installed.rc != 0 or cilium_needs_update
+
+    # Wait for Cilium resources - commented out because installation is done manually via Helm
+    # - name: Wait for Cilium resources
+    #   ansible.builtin.command: >-
+    #     {% if item.type == 'daemonset' %}
+    #     {{ k3s_kubectl_binary | default('k3s kubectl') }} wait pods
+    #     --namespace=cilium-network-policy
+    #     --selector='k8s-app=cilium'
+    #     --for=condition=Ready
+    #     {% else %}
+    #     {{ k3s_kubectl_binary | default('k3s kubectl') }} wait {{ item.type }}/{{ item.name }}
+    #     --namespace=cilium-network-policy
+    #     --for=condition=Available
+    #     {% endif %}
+    #     --timeout=30s
+    #   register: cr_result
+    #   changed_when: false
+    #   until: cr_result is succeeded
+    #   retries: 30
+    #   delay: 7
+    #   with_items:
+    #     - { name: cilium-operator, type: deployment }
+    #     - { name: cilium, type: daemonset, selector: k8s-app=cilium }
+    #     - { name: hubble-relay, type: deployment, check_hubble: true }
+    #     - { name: hubble-ui, type: deployment, check_hubble: true }
+    #   loop_control:
+    #     label: "{{ item.type }}/{{ item.name }}"
+    #   when: >-
+    #     not item.check_hubble | default(false) or (item.check_hubble | default(false) and cilium_hubble)
 
     - name: Configure Cilium BGP
       when: cilium_bgp

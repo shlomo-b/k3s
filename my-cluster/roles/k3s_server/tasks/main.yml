@@ -22,6 +22,12 @@
   ansible.builtin.include_tasks: http_proxy.yml
   when: proxy_env is defined
 
+- name: Remove metrics-server manifest if it exists
+  ansible.builtin.file:
+    path: /var/lib/rancher/k3s/server/manifests/metrics-server.yaml
+    state: absent
+  failed_when: false
+
 - name: Deploy vip manifest
   ansible.builtin.include_tasks: vip.yml
 - name: Deploy metallb manifest
@@ -171,3 +177,29 @@
     - "{{ k3s_server_manifests_directories.files }}"
   loop_control:
     label: "{{ item.path }}"
+
+- name: Ensure metrics-server manifest is removed after installation
+  ansible.builtin.file:
+    path: /var/lib/rancher/k3s/server/manifests/metrics-server.yaml
+    state: absent
+  failed_when: false
+
+- name: Delete all metrics-server resources if they exist
+  ansible.builtin.command:
+    cmd: "{{ k3s_kubectl_binary | default('k3s kubectl') }} delete deployment,service,serviceaccount,clusterrole,clusterrolebinding,role,rolebinding -n kube-system -l k8s-app=metrics-server --ignore-not-found=true"
+  failed_when: false
+  changed_when: false
+  register: delete_metrics_server
+
+- name: Delete metrics-server deployment by name if label selector didn't work
+  ansible.builtin.command:
+    cmd: "{{ k3s_kubectl_binary | default('k3s kubectl') }} delete deployment metrics-server -n kube-system --ignore-not-found=true"
+  failed_when: false
+  changed_when: false
+  when: delete_metrics_server.rc != 0
+
+- name: Delete metrics-server service by name if it exists
+  ansible.builtin.command:
+    cmd: "{{ k3s_kubectl_binary | default('k3s kubectl') }} delete service metrics-server -n kube-system --ignore-not-found=true"
+  failed_when: false
+  changed_when: false

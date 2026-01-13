@@ -36,7 +36,8 @@
   vars:
     apiserver_endpoint: "10.90.100.230"
     k3s_token: "some-SUPER-DEDEUPER-secret-password"
-    server_init_args: "--cluster-init --tls-san 10.90.100.230 --disable traefik --disable metrics-server"
+    server_init_args: "--cluster-init --tls-san 10.90.100.230 --disable=traefik --disable=metrics-server --flannel-backend=none --disable-network-policy"
+    extra_server_args: ""
   roles:
     - role: k3s_server
       become: true
@@ -51,12 +52,15 @@
     - role: k3s_agent
       become: true
 
-# - name: Configure k3s cluster
-#   hosts: master
-#   environment: "{{ proxy_env | default({}) }}"
-#   roles:
-#     - role: k3s_server_post
-#       become: true
+- name: Configure k3s cluster
+  hosts: master
+  environment: "{{ proxy_env | default({}) }}"
+  vars:
+    apiserver_endpoint: "10.90.100.230"
+    cilium_iface: auto
+  roles:
+    - role: k3s_server_post
+      become: true
 
 - name: Storing kubeconfig in the playbook directory
   hosts: master

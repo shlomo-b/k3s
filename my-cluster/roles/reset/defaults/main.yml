@@ -1,2 +1,24 @@
 ---
 systemd_dir: /etc/systemd/system
+
+# List of CNI network interfaces to remove during reset
+# These are common interfaces created by various CNI plugins
+cni_interfaces_to_remove:
+  - flannel.1
+  - cni0
+  - cilium_vxlan
+  - cilium_host
+  - cilium_net
+  - calico_tunl
+  - vxlan.calico
+
+# Patterns to search for CNI interfaces (for automatic discovery)
+# Only specific CNI-related patterns to avoid deleting unrelated interfaces
+cni_interface_patterns:
+  - "^[0-9]+: flannel"
+  - "^[0-9]+: cni0"
+  - "^[0-9]+: cilium"
+  - "^[0-9]+: calico"
+  - "^[0-9]+: cali[0-9a-f]"  # Calico interfaces: cali<hex>
+  - "^[0-9]+: vxlan\\.calico"
+  - "^[0-9]+: cilium_vxlan"
